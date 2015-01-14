@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sndlib.h"
-#include	<sndfile.h>
 #include "gnuplot_i.h"
 
 void main(void) {
@@ -12,12 +11,12 @@ void main(void) {
     wav_header_t header;
 
     // read wav signal:
-    test_wave = wav_open("test_signal.wav", WAV_READ );
+    test_wave = wav_open("test_signal.wav", SFM_READ );
     wav_read(test_wave, &header, &data);
     wav_close(test_wave);
 
     // write wav signal:
-    test_wave = wav_open("test_signal_2.wav", WAV_WRITE);
+    test_wave = wav_open("test_signal_2.wav", SFM_WRITE);
     wav_write(test_wave, &header, data);
     wav_close(test_wave);
 
