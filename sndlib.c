@@ -3,20 +3,21 @@
 #include <err.h>
 #include <fcntl.h>
 #include <string.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "sndlib.h"
 
 WAVFILE wav_open(const char *file_name, const int mode) {
-    WAVFILE wav_file;
-
-    if (mode != SFM_READ || mode != SFM_WRITE || mode != SFM_RDWR) {
+    if (mode != SFM_READ && mode != SFM_WRITE && mode != SFM_RDWR) {
         fprintf(stderr, "Error mode type\n");
         exit(EXIT_FAILURE); /* indicate failure.*/
     }
 
-    wav_file = open(file_name, mode);
+    WAVFILE wav_file = open(file_name, mode);
+
+    if ((wav_file < 1) && (mode == SFM_WRITE || mode == SFM_RDWR)) {
+        wav_file = open(file_name, mode | O_CREAT | O_EXCL, 0666);
+    }
 
     if (wav_file < 1) {
         fprintf(stderr, "Error opening file: %s\n", file_name);
@@ -26,57 +27,51 @@ WAVFILE wav_open(const char *file_name, const int mode) {
     return wav_file;
 }
 
-int wav_read(WAVFILE *wav_file, wav_data_t* data, wav_header_t *header) {
+int wav_read(WAVFILE wav_file, wav_header_t *header, wav_data_t *data) {
     free(*data);
-    header = (wav_header_t*)malloc(sizeof(wav_header_t));
+    *data = (wav_data_t)malloc(header->data_chunk_size);
 
+    int header_size = read(wav_file, header, sizeof(wav_header_t));
+    if (header_size < sizeof(wav_header_t)) {
+        fprintf(stderr, "File broken header\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
 
-    if (read(fd, header, sizeof(wav_header_t)) < sizeof(wav_header_t))
-        errx(1, "File broken: header");
-    if (strncmp(header->chunk_id, "RIFF", 4) ||
-        strncmp(header->format, "WAVE", 4))
-        errx(1, "Not a wav file");
-    if (header->audio_format != 1)
-        errx(1, "Only PCM encoding supported");
+    if (strncmp(header->chunk_id, "RIFF", 4) || strncmp(header->format, "WAVE", 4)) {
+        fprintf(stderr, "Not a wav file\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
+    if (header->audio_format != 1) {
+        fprintf(stderr, "Only PCM encoding supported\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
 
-    *data = (int16_t*)malloc(header->data_chunk_size);
-    if (!*data)
-        errx(1, "Error allocating memory");
-    if (read(fd, *data, header->data_chunk_size) < header->data_chunk_size)
-        errx(1, "File broken: samples");
-    close(fd);
+    int data_size = read(wav_file, *data, header->data_chunk_size);
+    if (data_size < sizeof(wav_header_t)) {
+        fprintf(stderr, "File broken data\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
+
+    return 1;
 }
 
-void wav_read2(char *file_name, wav_data_t* samples) {
-    int fd;
-    if ((fd = open(file_name, O_RDONLY)) < 1)
-        errx(1, "Error opening file");
-    if (!header)
-        header = (wav_header_t*)malloc(sizeof(wav_header_t));
-    if (read(fd, header, sizeof(wav_header_t)) < sizeof(wav_header_t))
-        errx(1, "File broken: header");
-    if (strncmp(header->chunk_id, "RIFF", 4) ||
-        strncmp(header->format, "WAVE", 4))
-        errx(1, "Not a wav file");
-    if (header->audio_format != 1)
-        errx(1, "Only PCM encoding supported");
-    if (*samples)
-        free(*samples);
-    *samples = (int16_t*)malloc(header->data_chunk_size);
-    if (!*samples)
-        errx(1, "Error allocating memory");
-    if (read(fd, *samples, header->data_chunk_size) < header->data_chunk_size)
-        errx(1, "File broken: samples");
-    close(fd);
+int wav_write(WAVFILE wav_file, wav_header_t *header, wav_data_t data) {
+
+    int header_size = write(wav_file, header, sizeof(wav_header_t));
+    if (header_size < sizeof(wav_header_t)) {
+        fprintf(stderr, "Error writing header\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
+
+    int data_size = write(wav_file, data, header->data_chunk_size);
+    if (data_size < header->data_chunk_size) {
+        fprintf(stderr, "Error writing data\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
+
+    return 1;
 }
 
-void wav_write(char *file_name, wav_data_t samples) {
-    int fd;
-    if ((fd = creat(file_name, 0666)) < 1)
-        errx(1, "Error creating file");
-    if (write(fd, header, sizeof(wav_header_t)) < sizeof(wav_header_t))
-        errx(1, "Error writing header");
-    if (write(fd, samples, header->data_chunk_size) < header->data_chunk_size)
-        errx(1, "Error writing samples");
-    close(fd);
+int wav_close(WAVFILE wav_file) {
+    close(wav_file);
 }
