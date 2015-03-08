@@ -8,7 +8,7 @@
 void main(void) {
 
     int16_t *samples = NULL;
-    wav_read("testSignal.wav", &samples);
+    wav_read2("testSignal.wav", &samples);
 
     printf("No. of channels: %d\n",     header->num_channels);
     printf("Sample rate:     %d\n",     header->sample_rate);

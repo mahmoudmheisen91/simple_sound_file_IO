@@ -36,9 +36,9 @@
     wav_header_t *header;
 
     // Functions Prototypes:
-    WAVFILE wav_open(char *file_name, int mode);
+    WAVFILE wav_open(const char *file_name, const int mode);
     void wav_close(char *file_name, wav_data_t* samples);
-    void wav_read(char *file_name, wav_data_t* samples);
+    int wav_read(WAVFILE *wav_file, wav_data_t* data, wav_header_t *header);
     void wav_read_header(char *file_name, wav_data_t* samples);
     void wav_read_data(char *file_name, wav_data_t* samples);
     void wav_write(char *file_name, wav_data_t samples);

@@ -8,8 +8,13 @@
 #include <sys/stat.h>
 #include "sndlib.h"
 
-WAVFILE wav_open(char *file_name, int mode) {
+WAVFILE wav_open(const char *file_name, const int mode) {
     WAVFILE wav_file;
+
+    if (mode != SFM_READ || mode != SFM_WRITE || mode != SFM_RDWR) {
+        fprintf(stderr, "Error mode type\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
 
     wav_file = open(file_name, mode);
 
@@ -21,7 +26,28 @@ WAVFILE wav_open(char *file_name, int mode) {
     return wav_file;
 }
 
-void wav_read(char *file_name, wav_data_t* samples) {
+int wav_read(WAVFILE *wav_file, wav_data_t* data, wav_header_t *header) {
+    free(*data);
+    header = (wav_header_t*)malloc(sizeof(wav_header_t));
+
+
+    if (read(fd, header, sizeof(wav_header_t)) < sizeof(wav_header_t))
+        errx(1, "File broken: header");
+    if (strncmp(header->chunk_id, "RIFF", 4) ||
+        strncmp(header->format, "WAVE", 4))
+        errx(1, "Not a wav file");
+    if (header->audio_format != 1)
+        errx(1, "Only PCM encoding supported");
+
+    *data = (int16_t*)malloc(header->data_chunk_size);
+    if (!*data)
+        errx(1, "Error allocating memory");
+    if (read(fd, *data, header->data_chunk_size) < header->data_chunk_size)
+        errx(1, "File broken: samples");
+    close(fd);
+}
+
+void wav_read2(char *file_name, wav_data_t* samples) {
     int fd;
     if ((fd = open(file_name, O_RDONLY)) < 1)
         errx(1, "Error opening file");
