@@ -11,7 +11,7 @@ void main(void) {
     wav_header_t header;
 
     WAVFILE *test_wave = wav_open("testSignal.wav", SFM_READ);
-    //wav_read(test_wave, &header, &data);
+    wav_read(test_wave, &header, &data);
     wav_close(test_wave);
 
     //test_wave = wav_open("testSignal8.wav", SFM_WRITE);

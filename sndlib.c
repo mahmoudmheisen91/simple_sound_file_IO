@@ -36,11 +36,16 @@ WAVFILE* wav_open(const char *file_name, const int mode) {
     return wav_file2;
 }
 
-int wav_read(WAVFILE wav_file, wav_header_t *header, wav_data_t *data) {
+int wav_read(WAVFILE *wav_file, wav_header_t *header, wav_data_t *data) {
+    if (wav_file->is_read == False) {
+        fprintf(stderr, "File is write only\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
+
     free(*data);
     *data = (wav_data_t)malloc(header->data_chunk_size);
 
-    int header_size = read(wav_file, header, sizeof(wav_header_t));
+    int header_size = read(wav_file->file_discriptor, header, sizeof(wav_header_t));
     if (header_size < sizeof(wav_header_t)) {
         fprintf(stderr, "File broken header\n");
         exit(EXIT_FAILURE); /* indicate failure.*/
@@ -55,7 +60,7 @@ int wav_read(WAVFILE wav_file, wav_header_t *header, wav_data_t *data) {
         exit(EXIT_FAILURE); /* indicate failure.*/
     }
 
-    int data_size = read(wav_file, *data, header->data_chunk_size);
+    int data_size = read(wav_file->file_discriptor, *data, header->data_chunk_size);
     if (data_size < sizeof(wav_header_t)) {
         fprintf(stderr, "File broken data\n");
         exit(EXIT_FAILURE); /* indicate failure.*/
