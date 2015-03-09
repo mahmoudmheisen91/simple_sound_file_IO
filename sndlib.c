@@ -69,15 +69,19 @@ int wav_read(WAVFILE *wav_file, wav_header_t *header, wav_data_t *data) {
     return 1;
 }
 
-int wav_write(WAVFILE wav_file, wav_header_t *header, wav_data_t data) {
+int wav_write(WAVFILE *wav_file, wav_header_t *header, wav_data_t data) {
+    if (wav_file->is_write == False) {
+        fprintf(stderr, "File is read only\n");
+        exit(EXIT_FAILURE); /* indicate failure.*/
+    }
 
-    int header_size = write(wav_file, header, sizeof(wav_header_t));
+    int header_size = write(wav_file->file_discriptor, header, sizeof(wav_header_t));
     if (header_size < sizeof(wav_header_t)) {
         fprintf(stderr, "Error writing header\n");
         exit(EXIT_FAILURE); /* indicate failure.*/
     }
 
-    int data_size = write(wav_file, data, header->data_chunk_size);
+    int data_size = write(wav_file->file_discriptor, data, header->data_chunk_size);
     if (data_size < header->data_chunk_size) {
         fprintf(stderr, "Error writing data\n");
         exit(EXIT_FAILURE); /* indicate failure.*/

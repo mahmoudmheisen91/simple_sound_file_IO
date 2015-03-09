@@ -47,7 +47,7 @@
     int wav_read(WAVFILE *wav_file, wav_header_t *header, wav_data_t *data);
     int wav_read_header(char *file_name, wav_data_t* samples);
     int wav_read_data(char *file_name, wav_data_t* samples);
-    int wav_write(WAVFILE wav_file, wav_header_t *header, wav_data_t data);
+    int wav_write(WAVFILE *wav_file, wav_header_t *header, wav_data_t data);
     int wav_write_header(char *file_name, wav_data_t samples);
     int wav_write_data(char *file_name, wav_data_t samples);
 
