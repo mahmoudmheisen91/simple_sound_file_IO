@@ -7,24 +7,33 @@
 #include <sys/stat.h>
 #include "sndlib.h"
 
-WAVFILE wav_open(const char *file_name, const int mode) {
+WAVFILE* wav_open(const char *file_name, const int mode) {
     if (mode != SFM_READ && mode != SFM_WRITE && mode != SFM_RDWR) {
         fprintf(stderr, "Error mode type\n");
         exit(EXIT_FAILURE); /* indicate failure.*/
     }
 
-    WAVFILE wav_file = open(file_name, mode);
+    WAVFILE wav_file;
+    wav_file.file_discriptor = open(file_name, mode);
+    wav_file.is_read = (mode == SFM_READ) ? True : False;
+    wav_file.is_write = (mode == SFM_WRITE) ? True : False;
 
-    if ((wav_file < 1) && (mode == SFM_WRITE || mode == SFM_RDWR)) {
-        wav_file = open(file_name, mode | O_CREAT | O_EXCL, 0666);
+    if (mode == SFM_RDWR) {
+        wav_file.is_read = True;
+        wav_file.is_write = True;
     }
 
-    if (wav_file < 1) {
+    if ((wav_file.file_discriptor < 1) && (mode == SFM_WRITE || mode == SFM_RDWR)) {
+        wav_file.file_discriptor = open(file_name, mode | O_CREAT | O_EXCL, 0666);
+    }
+
+    if (wav_file.file_discriptor < 1) {
         fprintf(stderr, "Error opening file: %s\n", file_name);
         exit(EXIT_FAILURE); /* indicate failure.*/
     }
 
-    return wav_file;
+    WAVFILE *wav_file2 = &wav_file;
+    return wav_file2;
 }
 
 int wav_read(WAVFILE wav_file, wav_header_t *header, wav_data_t *data) {
@@ -72,6 +81,6 @@ int wav_write(WAVFILE wav_file, wav_header_t *header, wav_data_t data) {
     return 1;
 }
 
-int wav_close(WAVFILE wav_file) {
+int wav_close(WAVFILE *wav_file) {
     close(wav_file);
 }

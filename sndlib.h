@@ -12,8 +12,19 @@
     #define SFM_READ   O_RDONLY  // read only mode
     #define SFM_WRITE  O_WRONLY  // write only mode
     #define SFM_RDWR   O_RDWR    // read/write mode
+    #define True       1
+    #define False      0
 
     // Type Definition:
+    typedef int boolean;
+    typedef int16_t* wav_data_t;
+
+    typedef struct _WAVFILE {
+        int file_discriptor;
+        boolean is_read;
+        boolean is_write;
+    } WAVFILE;
+
     typedef struct _wav_header_t {
         char     chunk_id[4];
         uint32_t chunk_size;
@@ -30,12 +41,9 @@
         uint32_t data_chunk_size;
     } wav_header_t;
 
-    typedef int16_t* wav_data_t;
-    typedef int WAVFILE;
-
     // Functions Prototypes:
-    WAVFILE wav_open(const char *file_name, const int mode);
-    int wav_close(WAVFILE wav_file);
+    WAVFILE *wav_open(const char *file_name, const int mode);
+    int wav_close(WAVFILE *wav_file);
     int wav_read(WAVFILE wav_file, wav_header_t *header, wav_data_t *data);
     int wav_read_header(char *file_name, wav_data_t* samples);
     int wav_read_data(char *file_name, wav_data_t* samples);
