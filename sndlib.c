@@ -9,7 +9,7 @@
 //   WAVFILE*        : pointer to the wav file
 WAVFILE* wav_open(char *file_name, int mode) {
     // check if the mode is correct:
-    if (mode != SFM_READ && mode != SFM_WRITE && mode != SFM_RDWR) {
+    if (mode != WAV_READ && mode != WAV_WRITE && mode != WAV_RDWR) {
         fprintf(stderr, "Error opening file %s: mode type is not correct\n", file_name);
         exit(EXIT_FAILURE); /* indicate failure.*/
     }
@@ -17,8 +17,8 @@ WAVFILE* wav_open(char *file_name, int mode) {
     // create wav file object and fill it is fields:
     WAVFILE wav_file;
     wav_file.file_discriptor = open(file_name, mode);
-    wav_file.is_read   = (mode == SFM_READ  || mode == SFM_RDWR) ? 1 : 0;
-    wav_file.is_write  = (mode == SFM_WRITE || mode == SFM_RDWR) ? 1 : 0;
+    wav_file.is_read   = (mode == WAV_READ  || mode == WAV_RDWR) ? 1 : 0;
+    wav_file.is_write  = (mode == WAV_WRITE || mode == WAV_RDWR) ? 1 : 0;
 
     // create new file if the file does not exists and the mode is write or read/write:
     if ((wav_file.file_discriptor < 1) && (wav_file.is_write)) {

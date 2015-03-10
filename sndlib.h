@@ -1,6 +1,6 @@
 // sndlib.h:
 // Sound Library - Header File:
-// TODO: header and data types:
+// TODO: header and data types, Makefile:
 
 #ifndef SNDLIB_H_
 #define SNDLIB_H_
@@ -12,13 +12,13 @@
     #include <string.h>
 
     // Define Constants:
-    #define SFM_READ   O_RDONLY  // read only mode
-    #define SFM_WRITE  O_WRONLY  // write only mode
-    #define SFM_RDWR   O_RDWR    // read/write mode
+    #define WAV_READ   O_RDONLY  // read only mode
+    #define WAV_WRITE  O_WRONLY  // write only mode
+    #define WAV_RDWR   O_RDWR    // read/write mode
 
     // Type Definition:
     // wav file data type that contain pointer to the data:
-    typedef int* wav_data_t;
+    typedef int16_t* wav_data_t;
 
     // wav file header type that contain information about the wav signal, eg:
     // number of channels, audio format, sampling frequency, data length, etc:

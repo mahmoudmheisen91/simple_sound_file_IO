@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sndlib.h"
+#include	<sndfile.h>
+#include "gnuplot_i.h"
 
 void main(void) {
 
@@ -10,12 +12,12 @@ void main(void) {
     wav_header_t header;
 
     // read wav signal:
-    test_wave = wav_open("test_signal.wav", SFM_READ );
+    test_wave = wav_open("test_signal.wav", WAV_READ );
     wav_read(test_wave, &header, &data);
     wav_close(test_wave);
 
     // write wav signal:
-    test_wave = wav_open("test_signal_2.wav", SFM_WRITE);
+    test_wave = wav_open("test_signal_2.wav", WAV_WRITE);
     wav_write(test_wave, &header, data);
     wav_close(test_wave);
 
@@ -39,17 +41,59 @@ void main(void) {
     printf("\nSample print:\n");
     printf("  Bit rate: \t%dkbps\n\n", header.byte_rate*8 / 1000);
 
-    // save wav signal to file:
+
+    /*/ save wav signal to file:
     FILE *fp;
     fp = fopen("signal_data.txt", "w");
 
     int i;
-    for (i= 0; i < header.data_length; i++)
-        fprintf(fp, "%d %d\n", i, data[i]);
-    fclose(fp);
+    for (i= 0; i < header.data_length; i++) {
+        fprintf(fp, "%d\n", data[i]);
+    }
+    fclose(fp);*///
+
+
+    // save wav signal to file:
+    FILE *fp2;
+    fp2 = fopen("signal_data.txt", "r");
+
+    int j;
+    double data_to_plot[header.data_length];
+    for (j= 0; j < header.data_length; j++) {
+        fscanf(fp2, "%lf", &data_to_plot[j]);
+    }
+    fclose(fp2);
+
+    // plot data:
+    gnuplot_ctrl *h;
+    h = gnuplot_init();
+    gnuplot_setstyle(h, "lines") ;
+    gnuplot_set_xlabel(h, "my X label") ;
+    gnuplot_set_xlabel(h, "my Y label") ;
+    gnuplot_plot_x	(h, data_to_plot, header.data_length/2, "test signal");
+    sleep(10);
+    gnuplot_close(h) ;
+
 
     // free memory:
     // TODO: header as pointer
     // free(header);
     free(data);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
